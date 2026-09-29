@@ -1,29 +1,15 @@
-/*
- * Samson Grace Academy
- * Offline Service Worker
- */
-
-const CACHE_NAME = "samson-grace-academy-v1";
-
-
-/*
- * Everything we want available offline.
- */
+const CACHE_NAME = "samson-grace-academy-v2";
 
 const FILES_TO_CACHE = [
-
   "/offline/",
-
   "/offline/index.html",
-
   "/offline/service-worker.js"
-
 ];
 
 
-/*
- * INSTALL
- */
+/* ================================
+   INSTALL
+================================ */
 
 self.addEventListener("install", event => {
 
@@ -31,28 +17,22 @@ self.addEventListener("install", event => {
 
   event.waitUntil(
 
-    caches.open(CACHE_NAME)
+    caches.open(CACHE_NAME).then(cache => {
 
-      .then(cache => {
+      return cache.addAll(FILES_TO_CACHE);
 
-        return cache.addAll(FILES_TO_CACHE);
-
-      })
+    })
 
   );
-
-  /*
-   * Activate immediately.
-   */
 
   self.skipWaiting();
 
 });
 
 
-/*
- * ACTIVATE
- */
+/* ================================
+   ACTIVATE
+================================ */
 
 self.addEventListener("activate", event => {
 
@@ -64,18 +44,12 @@ self.addEventListener("activate", event => {
 
       self.clients.claim(),
 
-      /*
-       * Remove old caches.
-       */
-
       caches.keys().then(cacheNames => {
 
         return Promise.all(
 
           cacheNames
-
             .filter(name => name !== CACHE_NAME)
-
             .map(name => caches.delete(name))
 
         );
@@ -89,44 +63,67 @@ self.addEventListener("activate", event => {
 });
 
 
-/*
- * FETCH
- *
- * Try the internet first.
- *
- * If the internet doesn't work,
- * use the cached version.
- */
+/* ================================
+   FETCH
+================================ */
 
 self.addEventListener("fetch", event => {
 
+  const request = event.request;
+
+  /*
+   * ONLY handle HTTP/HTTPS requests.
+   *
+   * This prevents errors from things like:
+   * chrome-extension://
+   */
+
+  if (
+    request.method !== "GET" ||
+    (request.url.startsWith("http://") === false &&
+     request.url.startsWith("https://") === false)
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+   * Only handle requests belonging
+   * to our GitHub Pages site.
+   */
+
+  const url = new URL(request.url);
+
+  if (url.origin !== self.location.origin) {
+
+    return;
+
+  }
+
+
   event.respondWith(
 
-    fetch(event.request)
+    fetch(request)
 
       .then(response => {
 
         /*
-         * Save successful requests
-         * into the offline cache.
+         * Cache successful website requests.
          */
 
         if (
           response &&
-          response.status === 200 &&
-          response.type === "basic"
+          response.status === 200
         ) {
 
-          const responseClone =
-            response.clone();
+          const copy = response.clone();
 
           caches.open(CACHE_NAME)
             .then(cache => {
 
-              cache.put(
-                event.request,
-                responseClone
-              );
+              cache.put(request, copy);
 
             });
 
@@ -139,11 +136,12 @@ self.addEventListener("fetch", event => {
       .catch(() => {
 
         /*
-         * Internet failed.
-         * Look for a cached copy.
+         * Internet is unavailable.
+         *
+         * Try the cached version.
          */
 
-        return caches.match(event.request)
+        return caches.match(request)
 
           .then(cachedResponse => {
 
@@ -153,9 +151,10 @@ self.addEventListener("fetch", event => {
 
             }
 
+
             /*
              * If the requested page isn't cached,
-             * return index.html.
+             * show index.html.
              */
 
             return caches.match(
