@@ -1,7 +1,8 @@
 const CACHE_NAME = "samson-grace-offline-v1";
 
 const FILES_TO_CACHE = [
-  "./index.html"
+  "/offline/",
+  /offline/index.html
 ];
 
 self.addEventListener("install", event => {
