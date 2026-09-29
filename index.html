@@ -3,65 +3,192 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline Test</title>
+
+  <title>Samson Grace Academy - Offline Test</title>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #111827;
-      color: white;
-      display: grid;
-      place-items: center;
-      min-height: 100vh;
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #111827, #1e3a8a);
+      color: white;
     }
 
     .card {
-      text-align: center;
-      background: #1f2937;
+      width: min(90%, 600px);
       padding: 40px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.1);
       border-radius: 20px;
-      max-width: 500px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin-top: 0;
     }
 
     button {
-      padding: 12px 20px;
-      border: 0;
+      margin-top: 20px;
+      padding: 12px 22px;
+      border: none;
       border-radius: 10px;
-      cursor: pointer;
       background: #3b82f6;
       color: white;
       font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
     }
 
     #status {
-      margin-top: 20px;
+      margin-top: 25px;
+      padding: 15px;
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .online {
       color: #86efac;
+    }
+
+    .offline {
+      color: #fca5a5;
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
-    <h1>🚀 Offline Website</h1>
-    <p>If you can see this after disconnecting your internet, it works!</p>
 
-    <button onclick="testOffline()">Test JavaScript</button>
+  <main class="card">
 
-    <div id="status"></div>
-  </div>
+    <h1>🚀 Samson Grace Academy</h1>
+
+    <p>
+      This is an offline website test.
+    </p>
+
+    <p>
+      Load this page once while online, then disconnect the internet
+      and refresh the page.
+    </p>
+
+    <button onclick="testJavaScript()">
+      Test JavaScript
+    </button>
+
+    <div id="status">
+      Checking connection...
+    </div>
+
+  </main>
 
   <script>
-    // Register the service worker
+    /*
+     * SERVICE WORKER
+     *
+     * Because this is a GitHub Pages project site,
+     * the repository name "offline" is part of the URL.
+     */
+
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/offline/service-worker.js");
-        .then(() => console.log("Offline support enabled"))
-        .catch(err => console.error("Service worker failed:", err));
+
+      window.addEventListener("load", function () {
+
+        navigator.serviceWorker
+          .register("/offline/service-worker.js", {
+            scope: "/offline/"
+          })
+
+          .then(function (registration) {
+
+            console.log(
+              "Service Worker registered:",
+              registration.scope
+            );
+
+          })
+
+          .catch(function (error) {
+
+            console.error(
+              "Service Worker registration failed:",
+              error
+            );
+
+          });
+
+      });
+
+    } else {
+
+      console.log(
+        "This browser does not support Service Workers."
+      );
+
     }
 
-    function testOffline() {
+
+    /*
+     * ONLINE / OFFLINE STATUS
+     */
+
+    function updateConnectionStatus() {
+
+      const status = document.getElementById("status");
+
+      if (navigator.onLine) {
+
+        status.className = "online";
+
+        status.textContent =
+          "🟢 Internet connection detected.";
+
+      } else {
+
+        status.className = "offline";
+
+        status.textContent =
+          "🔴 OFFLINE — but the website is still running!";
+
+      }
+
+    }
+
+    window.addEventListener(
+      "online",
+      updateConnectionStatus
+    );
+
+    window.addEventListener(
+      "offline",
+      updateConnectionStatus
+    );
+
+    updateConnectionStatus();
+
+
+    /*
+     * JAVASCRIPT TEST
+     */
+
+    function testJavaScript() {
+
       document.getElementById("status").textContent =
-        "✅ JavaScript is working offline!";
+        "✅ JavaScript is working — even if you're offline!";
+
     }
   </script>
+
 </body>
 </html>
