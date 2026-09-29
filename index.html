@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111827;
+      color: white;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      text-align: center;
+      background: #1f2937;
+      padding: 40px;
+      border-radius: 20px;
+      max-width: 500px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #3b82f6;
+      color: white;
+      font-size: 16px;
+    }
+
+    #status {
+      margin-top: 20px;
+      color: #86efac;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>🚀 Offline Website</h1>
+    <p>If you can see this after disconnecting your internet, it works!</p>
+
+    <button onclick="testOffline()">Test JavaScript</button>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // Register the service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Offline support enabled"))
+        .catch(err => console.error("Service worker failed:", err));
+    }
+
+    function testOffline() {
+      document.getElementById("status").textContent =
+        "✅ JavaScript is working offline!";
+    }
+  </script>
+</body>
+</html>
